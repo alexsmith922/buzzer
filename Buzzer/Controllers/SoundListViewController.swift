@@ -5,7 +5,7 @@ import UIKit
 final class SoundListViewController: UITableViewController {
 
     private enum Section: Int, CaseIterable {
-        case custom, builtIn
+        case custom, classic, builtIn
     }
 
     private let library = SoundLibrary.shared
@@ -46,6 +46,7 @@ final class SoundListViewController: UITableViewController {
     private func sounds(in section: Int) -> [SoundEffect] {
         switch Section(rawValue: section)! {
         case .custom: return library.customSounds
+        case .classic: return library.classicSounds
         case .builtIn: return library.builtInSounds
         }
     }
@@ -67,7 +68,8 @@ final class SoundListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch Section(rawValue: section)! {
         case .custom: return "My Sounds"
-        case .builtIn: return "Built-in"
+        case .classic: return library.classicSounds.isEmpty ? nil : "Game Show"
+        case .builtIn: return "Synthesized"
         }
     }
 
@@ -75,8 +77,10 @@ final class SoundListViewController: UITableViewController {
         switch Section(rawValue: section)! {
         case .custom:
             return library.customSounds.isEmpty ? "Tap + to design a sound or record your own." : nil
+        case .classic:
+            return nil
         case .builtIn:
-            return "Built-in sounds are synthesized by the app, so they're free to use. Swipe left on one to remix it."
+            return "These sounds are synthesized by the app. Swipe left on one to remix it."
         }
     }
 
@@ -88,7 +92,11 @@ final class SoundListViewController: UITableViewController {
         content.text = sound.name
         content.secondaryText = sound.subtitle
         content.secondaryTextProperties.color = .secondaryLabel
-        content.image = UIImage(systemName: sound.recipe == nil ? "mic.fill" : "waveform")
+        switch sound.source {
+        case .synth: content.image = UIImage(systemName: "waveform")
+        case .recording: content.image = UIImage(systemName: "mic.fill")
+        case .bundled: content.image = UIImage(systemName: "speaker.wave.2.fill")
+        }
         cell.contentConfiguration = content
         cell.accessoryType = sound.id == library.selectedSound.id ? .checkmark : .none
         return cell
@@ -117,7 +125,7 @@ final class SoundListViewController: UITableViewController {
         remix.image = UIImage(systemName: "slider.horizontal.3")
 
         if sound.isBuiltIn {
-            return UISwipeActionsConfiguration(actions: [remix])
+            return sound.recipe == nil ? nil : UISwipeActionsConfiguration(actions: [remix])
         }
 
         let delete = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, done in

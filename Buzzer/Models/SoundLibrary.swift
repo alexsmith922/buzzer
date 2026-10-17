@@ -8,6 +8,12 @@ final class SoundLibrary {
     static let didChangeNotification = Notification.Name("SoundLibraryDidChange")
 
     let builtInSounds = SoundEffect.builtIns
+    let classicSounds = SoundEffect.classics.filter { sound in
+        if case .bundled(let resource) = sound.source {
+            return SoundEffect.bundleURL(forResource: resource) != nil
+        }
+        return false
+    }
     private(set) var customSounds: [SoundEffect] = []
 
     private let defaults: UserDefaults
@@ -26,7 +32,7 @@ final class SoundLibrary {
         load()
     }
 
-    var allSounds: [SoundEffect] { customSounds + builtInSounds }
+    var allSounds: [SoundEffect] { customSounds + classicSounds + builtInSounds }
 
     var selectedSound: SoundEffect {
         get {

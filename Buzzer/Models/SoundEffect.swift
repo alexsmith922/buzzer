@@ -1,12 +1,15 @@
 import Foundation
 
-/// A sound the buzzer can play: either synthesized from a recipe or recorded with the mic.
+/// A sound the buzzer can play: synthesized from a recipe, a sound effect file bundled
+/// with the app, or recorded with the mic.
 struct SoundEffect: Codable, Equatable, Identifiable {
 
     enum Source: Codable, Equatable {
         case synth(SynthRecipe)
         /// File name of a recording inside the sound library's directory.
         case recording(fileName: String)
+        /// Name (without extension) of an audio file in the app bundle.
+        case bundled(resource: String)
     }
 
     let id: UUID
@@ -30,6 +33,7 @@ struct SoundEffect: Codable, Equatable, Identifiable {
         switch source {
         case .synth(let recipe): return "Synth · \(recipe.waveform.displayName)"
         case .recording: return "Recording"
+        case .bundled: return "Sound Effect"
         }
     }
 }
@@ -37,6 +41,35 @@ struct SoundEffect: Codable, Equatable, Identifiable {
 // MARK: - Built-in sounds
 
 extension SoundEffect {
+
+    private static let bundledExtensions = ["m4a", "mp3", "wav", "caf", "aif", "aiff"]
+
+    /// The app-bundle file for a bundled sound, or nil if it isn't in the app.
+    static func bundleURL(forResource resource: String) -> URL? {
+        for fileExtension in bundledExtensions {
+            if let url = Bundle.main.url(forResource: resource, withExtension: fileExtension) {
+                return url
+            }
+        }
+        return nil
+    }
+
+    private static func classic(_ id: String, _ name: String, _ resource: String) -> SoundEffect {
+        SoundEffect(id: UUID(uuidString: id)!, name: name, source: .bundled(resource: resource), isBuiltIn: true)
+    }
+
+    /// Recorded game show sound effects. Each one only appears once its file is in
+    /// Buzzer/Sounds, named after its resource (any common audio extension works).
+    static let classics: [SoundEffect] = [
+        classic("6B1E1E3A-0002-4000-8000-000000000001", "Correct Answer", "correct"),
+        classic("6B1E1E3A-0002-4000-8000-000000000002", "Wrong Answer Buzzer", "wrong"),
+        classic("6B1E1E3A-0002-4000-8000-000000000003", "Time's Up", "times-up"),
+        classic("6B1E1E3A-0002-4000-8000-000000000004", "Drumroll", "drumroll"),
+        classic("6B1E1E3A-0002-4000-8000-000000000005", "Applause", "applause"),
+        classic("6B1E1E3A-0002-4000-8000-000000000006", "Aww", "aww"),
+        classic("6B1E1E3A-0002-4000-8000-000000000007", "Rimshot", "rimshot"),
+        classic("6B1E1E3A-0002-4000-8000-000000000008", "Sad Trombone", "sad-trombone"),
+    ]
 
     private static func builtIn(_ id: String, _ name: String, _ recipe: SynthRecipe) -> SoundEffect {
         SoundEffect(id: UUID(uuidString: id)!, name: name, source: .synth(recipe), isBuiltIn: true)
