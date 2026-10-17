@@ -68,7 +68,7 @@ final class SoundListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch Section(rawValue: section)! {
         case .custom: return "My Sounds"
-        case .classic: return library.classicSounds.isEmpty ? nil : "Game Show"
+        case .classic: return "Game Show"
         case .builtIn: return "Synthesized"
         }
     }
@@ -78,7 +78,9 @@ final class SoundListViewController: UITableViewController {
         case .custom:
             return library.customSounds.isEmpty ? "Tap + to design a sound or record your own." : nil
         case .classic:
-            return nil
+            return library.hasMissingClassicSounds
+                ? "Some game show sounds haven't downloaded yet. They'll appear the next time you open the app with a connection."
+                : nil
         case .builtIn:
             return "These sounds are synthesized by the app. Swipe left on one to remix it."
         }
@@ -95,7 +97,7 @@ final class SoundListViewController: UITableViewController {
         switch sound.source {
         case .synth: content.image = UIImage(systemName: "waveform")
         case .recording: content.image = UIImage(systemName: "mic.fill")
-        case .bundled: content.image = UIImage(systemName: "speaker.wave.2.fill")
+        case .downloaded: content.image = UIImage(systemName: "speaker.wave.2.fill")
         }
         cell.contentConfiguration = content
         cell.accessoryType = sound.id == library.selectedSound.id ? .checkmark : .none

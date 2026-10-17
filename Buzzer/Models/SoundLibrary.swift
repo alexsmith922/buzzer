@@ -8,12 +8,6 @@ final class SoundLibrary {
     static let didChangeNotification = Notification.Name("SoundLibraryDidChange")
 
     let builtInSounds = SoundEffect.builtIns
-    let classicSounds = SoundEffect.classics.filter { sound in
-        if case .bundled(let resource) = sound.source {
-            return SoundEffect.bundleURL(forResource: resource) != nil
-        }
-        return false
-    }
     private(set) var customSounds: [SoundEffect] = []
 
     private let defaults: UserDefaults
@@ -32,6 +26,20 @@ final class SoundLibrary {
         load()
     }
 
+    /// The game show sounds that have finished downloading.
+    var classicSounds: [SoundEffect] {
+        SoundEffect.classics.filter { sound in
+            if case .downloaded(let fileName) = sound.source {
+                return SoundDownloader.shared.localURL(for: fileName) != nil
+            }
+            return false
+        }
+    }
+
+    var hasMissingClassicSounds: Bool {
+        classicSounds.count < SoundEffect.classics.count
+    }
+
     var allSounds: [SoundEffect] { customSounds + classicSounds + builtInSounds }
 
     var selectedSound: SoundEffect {
@@ -47,6 +55,11 @@ final class SoundLibrary {
             defaults.set(newValue.id.uuidString, forKey: selectedSoundKey)
             notifyChange()
         }
+    }
+
+    /// Called when a downloaded sound arrives, so screens can show it.
+    func downloadedSoundsDidChange() {
+        notifyChange()
     }
 
     func sound(withID id: UUID) -> SoundEffect? {

@@ -14,4 +14,10 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.makeKeyAndVisible()
         self.window = window
     }
+
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        // Runs on first launch and every return to the app, so sounds that couldn't
+        // download (no signal, airplane mode) are picked up once there's a connection.
+        SoundDownloader.shared.downloadMissingSounds()
+    }
 }

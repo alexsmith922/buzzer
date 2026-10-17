@@ -85,8 +85,8 @@ final class SoundPlayer {
                                            fileTypeHint: AVFileType.wav.rawValue)
         case .recording(let fileName):
             newPlayer = try? AVAudioPlayer(contentsOf: SoundLibrary.shared.recordingURL(for: fileName))
-        case .bundled(let resource):
-            newPlayer = SoundEffect.bundleURL(forResource: resource).flatMap { try? AVAudioPlayer(contentsOf: $0) }
+        case .downloaded(let fileName):
+            newPlayer = SoundDownloader.shared.localURL(for: fileName).flatMap { try? AVAudioPlayer(contentsOf: $0) }
         }
 
         guard let player = newPlayer else {

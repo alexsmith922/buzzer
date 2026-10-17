@@ -1,15 +1,15 @@
 import Foundation
 
-/// A sound the buzzer can play: synthesized from a recipe, a sound effect file bundled
-/// with the app, or recorded with the mic.
+/// A sound the buzzer can play: synthesized from a recipe, a sound effect file the app
+/// downloads, or recorded with the mic.
 struct SoundEffect: Codable, Equatable, Identifiable {
 
     enum Source: Codable, Equatable {
         case synth(SynthRecipe)
         /// File name of a recording inside the sound library's directory.
         case recording(fileName: String)
-        /// Name (without extension) of an audio file in the app bundle.
-        case bundled(resource: String)
+        /// File name of a sound effect the app downloads once and keeps on device.
+        case downloaded(fileName: String)
     }
 
     let id: UUID
@@ -33,7 +33,7 @@ struct SoundEffect: Codable, Equatable, Identifiable {
         switch source {
         case .synth(let recipe): return "Synth · \(recipe.waveform.displayName)"
         case .recording: return "Recording"
-        case .bundled: return "Sound Effect"
+        case .downloaded: return "Sound Effect"
         }
     }
 }
@@ -42,33 +42,21 @@ struct SoundEffect: Codable, Equatable, Identifiable {
 
 extension SoundEffect {
 
-    private static let bundledExtensions = ["m4a", "mp3", "wav", "caf", "aif", "aiff"]
-
-    /// The app-bundle file for a bundled sound, or nil if it isn't in the app.
-    static func bundleURL(forResource resource: String) -> URL? {
-        for fileExtension in bundledExtensions {
-            if let url = Bundle.main.url(forResource: resource, withExtension: fileExtension) {
-                return url
-            }
-        }
-        return nil
+    private static func classic(_ id: String, _ name: String, _ fileName: String) -> SoundEffect {
+        SoundEffect(id: UUID(uuidString: id)!, name: name, source: .downloaded(fileName: fileName), isBuiltIn: true)
     }
 
-    private static func classic(_ id: String, _ name: String, _ resource: String) -> SoundEffect {
-        SoundEffect(id: UUID(uuidString: id)!, name: name, source: .bundled(resource: resource), isBuiltIn: true)
-    }
-
-    /// Recorded game show sound effects. Each one only appears once its file is in
-    /// Buzzer/Sounds, named after its resource (any common audio extension works).
+    /// Recorded game show sound effects, hosted in the repo's Sounds folder. The app
+    /// downloads each one the first time it can and shows it once it's on the device.
     static let classics: [SoundEffect] = [
-        classic("6B1E1E3A-0002-4000-8000-000000000001", "Correct Answer", "correct"),
-        classic("6B1E1E3A-0002-4000-8000-000000000002", "Wrong Answer Buzzer", "wrong"),
-        classic("6B1E1E3A-0002-4000-8000-000000000003", "Time's Up", "times-up"),
-        classic("6B1E1E3A-0002-4000-8000-000000000004", "Drumroll", "drumroll"),
-        classic("6B1E1E3A-0002-4000-8000-000000000005", "Applause", "applause"),
-        classic("6B1E1E3A-0002-4000-8000-000000000006", "Aww", "aww"),
-        classic("6B1E1E3A-0002-4000-8000-000000000007", "Rimshot", "rimshot"),
-        classic("6B1E1E3A-0002-4000-8000-000000000008", "Sad Trombone", "sad-trombone"),
+        classic("6B1E1E3A-0002-4000-8000-000000000001", "Correct Answer", "correct.mp3"),
+        classic("6B1E1E3A-0002-4000-8000-000000000002", "Wrong Answer Buzzer", "wrong.mp3"),
+        classic("6B1E1E3A-0002-4000-8000-000000000003", "Time's Up", "times-up.mp3"),
+        classic("6B1E1E3A-0002-4000-8000-000000000004", "Drumroll", "drumroll.mp3"),
+        classic("6B1E1E3A-0002-4000-8000-000000000005", "Applause", "applause.mp3"),
+        classic("6B1E1E3A-0002-4000-8000-000000000006", "Aww", "aww.mp3"),
+        classic("6B1E1E3A-0002-4000-8000-000000000007", "Rimshot", "rimshot.mp3"),
+        classic("6B1E1E3A-0002-4000-8000-000000000008", "Sad Trombone", "sad-trombone.mp3"),
     ]
 
     private static func builtIn(_ id: String, _ name: String, _ recipe: SynthRecipe) -> SoundEffect {

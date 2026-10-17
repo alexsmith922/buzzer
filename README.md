@@ -12,30 +12,35 @@ a buzzer sound.
   Laser, Alarm, Siren, Boing, Ref Whistle, Static Zap, Power Up). The app
   synthesizes them at runtime instead of shipping audio files, so there are no
   licensing concerns.
-- **Game Show sounds**: recorded effects bundled from `Buzzer/Sounds` (see below).
+- **Game Show sounds**: recorded effects downloaded once on first open, then kept for offline use (see below).
 - **Design a sound**: pick a waveform and shape pitch glide, length, wobble,
   pulse, fade and grit with sliders, or hit Randomize. Built-in sounds can be
   remixed (swipe left).
 - **Record a sound**: record up to 10 seconds with the microphone.
 - Custom sounds can be edited, renamed and deleted, and are saved on device.
 
-## Adding the Game Show sounds
+## Game Show sounds
 
-Drop audio files (m4a, mp3, wav, caf or aiff) into `Buzzer/Sounds` with these
-names, and each one appears in the app's Game Show section. Missing files are
-simply hidden. Use CC0 or otherwise free-to-use clips, e.g. from Pixabay or
-Freesound filtered to CC0.
+These recorded effects aren't built into the app. The app downloads them from
+this repo's `Sounds/` folder (via raw.githubusercontent.com) and keeps them in
+Application Support, so after one successful download they work offline. If the
+first open has no connection, the app retries each time it becomes active.
+Sounds not downloaded yet are simply hidden. The repo must stay public for the
+download to work.
 
-| File name      | Shown as            |
-| -------------- | ------------------- |
-| `correct`      | Correct Answer      |
-| `wrong`        | Wrong Answer Buzzer |
-| `times-up`     | Time's Up           |
-| `drumroll`     | Drumroll            |
-| `applause`     | Applause            |
-| `aww`          | Aww                 |
-| `rimshot`      | Rimshot             |
-| `sad-trombone` | Sad Trombone        |
+| File in `Sounds/`  | Shown as            |
+| ------------------ | ------------------- |
+| `correct.mp3`      | Correct Answer      |
+| `wrong.mp3`        | Wrong Answer Buzzer |
+| `times-up.mp3`     | Time's Up           |
+| `drumroll.mp3`     | Drumroll            |
+| `applause.mp3`     | Applause            |
+| `aww.mp3`          | Aww                 |
+| `rimshot.mp3`      | Rimshot             |
+| `sad-trombone.mp3` | Sad Trombone        |
+
+Only use CC0 or otherwise free-to-use clips, and record where each came from in
+`Sounds/CREDITS.md`.
 
 ## Running
 
@@ -48,8 +53,9 @@ Requires iOS 17. To run on a device, set your team under Signing & Capabilities.
 Buzzer/
   App/          AppDelegate, SceneDelegate
   Models/       SynthRecipe, SoundEffect (+ built-in presets), SoundLibrary
-  Sounds/       Bundled game show sound effects
-  Services/     SoundSynthesizer (recipe -> WAV), SoundPlayer (AVAudioPlayer)
+  Services/     SoundSynthesizer (recipe -> WAV), SoundPlayer (AVAudioPlayer),
+                SoundDownloader (game show sounds)
   Views/        BuzzerButton, ParameterSliderView
   Controllers/  Buzzer, SoundList, SoundDesigner, SoundRecorder
+Sounds/         Game show sound files the app downloads (not bundled)
 ```
