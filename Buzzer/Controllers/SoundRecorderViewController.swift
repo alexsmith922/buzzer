@@ -137,6 +137,19 @@ final class SoundRecorderViewController: UIViewController {
 
     private func startRecording() {
         SoundPlayer.shared.stopPreview()
+        recordButton.isEnabled = false
+        SoundPlayer.shared.activateRecordingSession { [weak self] error in
+            guard let self else { return }
+            self.recordButton.isEnabled = true
+            if let error {
+                self.showAlert(title: "Couldn't Record", message: error.localizedDescription)
+            } else if self.viewIfLoaded?.window != nil {
+                self.beginRecorder()
+            }
+        }
+    }
+
+    private func beginRecorder() {
         let settings: [String: Any] = [
             AVFormatIDKey: kAudioFormatMPEG4AAC,
             AVSampleRateKey: 44_100,
@@ -144,7 +157,6 @@ final class SoundRecorderViewController: UIViewController {
             AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue,
         ]
         do {
-            try SoundPlayer.shared.activateRecordingSession()
             let recorder = try AVAudioRecorder(url: recordingURL, settings: settings)
             recorder.delegate = self
             recorder.isMeteringEnabled = true

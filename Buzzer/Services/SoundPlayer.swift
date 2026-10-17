@@ -13,17 +13,31 @@ final class SoundPlayer {
     private var cache: [UUID: CachedPlayer] = [:]
     private var previewPlayer: AVAudioPlayer?
 
+    /// Activating the audio session can block, so it happens off the main thread.
+    /// A serial queue keeps playback and recording switches in the order requested.
+    private let sessionQueue = DispatchQueue(label: "Buzzer.AudioSession", qos: .userInitiated)
+
     /// Plays even when the ringer switch is on silent, as a buzzer should.
     func activatePlaybackSession() {
-        let session = AVAudioSession.sharedInstance()
-        try? session.setCategory(.playback, mode: .default)
-        try? session.setActive(true)
+        sessionQueue.async {
+            let session = AVAudioSession.sharedInstance()
+            try? session.setCategory(.playback, mode: .default)
+            try? session.setActive(true)
+        }
     }
 
-    func activateRecordingSession() throws {
-        let session = AVAudioSession.sharedInstance()
-        try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
-        try session.setActive(true)
+    /// Calls `completion` on the main thread with nil once the session is ready, or the error.
+    func activateRecordingSession(completion: @escaping (Error?) -> Void) {
+        sessionQueue.async {
+            let session = AVAudioSession.sharedInstance()
+            do {
+                try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
+                try session.setActive(true)
+                DispatchQueue.main.async { completion(nil) }
+            } catch {
+                DispatchQueue.main.async { completion(error) }
+            }
+        }
     }
 
     /// Builds the player ahead of time so the first press is instant.
