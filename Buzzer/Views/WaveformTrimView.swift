@@ -25,7 +25,8 @@ final class WaveformTrimView: UIControl {
     private var peaks: [Float] = []
     private var activeHandle: Handle?
     private let handleWidth: CGFloat = 16
-    private let selectionColor = UIColor.systemYellow
+    /// Matches the buzzer and record button.
+    private let selectionColor = UIColor.systemRed
     private lazy var startElement = HandleAccessibilityElement(accessibilityContainer: self)
     private lazy var endElement = HandleAccessibilityElement(accessibilityContainer: self)
 
@@ -132,7 +133,8 @@ final class WaveformTrimView: UIControl {
 
         guard duration > 0, !peaks.isEmpty else { return }
 
-        // Bars, bright inside the selection and faded outside it.
+        // Bars, bright inside the selection and faded outside it. Kept neutral so the
+        // red selection frame stands out against them.
         let barSlot = waveformRect.width / CGFloat(peaks.count)
         let barWidth = max(1, barSlot * 0.6)
         let maxBarHeight = waveformRect.height - 16
@@ -144,7 +146,7 @@ final class WaveformTrimView: UIControl {
             let bar = CGRect(x: centerX - barWidth / 2, y: waveformRect.midY - height / 2,
                              width: barWidth, height: height)
             let isSelected = centerX >= startX && centerX <= endX
-            (isSelected ? tintColor : UIColor.tertiaryLabel).setFill()
+            (isSelected ? UIColor.label : UIColor.tertiaryLabel).setFill()
             UIBezierPath(roundedRect: bar, cornerRadius: barWidth / 2).fill()
         }
 
@@ -157,21 +159,16 @@ final class WaveformTrimView: UIControl {
                            CGRect(x: endX, y: 0, width: handleWidth, height: bounds.height)] {
             UIBezierPath(roundedRect: handleRect, cornerRadius: 4).fill()
             let grip = CGRect(x: handleRect.midX - 1, y: handleRect.midY - 8, width: 2, height: 16)
-            UIColor.black.withAlphaComponent(0.5).setFill()
+            UIColor.white.withAlphaComponent(0.8).setFill()
             UIBezierPath(roundedRect: grip, cornerRadius: 1).fill()
             selectionColor.setFill()
         }
 
         if let playheadTime {
-            UIColor.white.setFill()
+            selectionColor.setFill()
             UIRectFill(CGRect(x: x(for: playheadTime) - 1, y: frameWidth, width: 2,
                               height: bounds.height - frameWidth * 2))
         }
-    }
-
-    override func tintColorDidChange() {
-        super.tintColorDidChange()
-        setNeedsDisplay()
     }
 
     // MARK: - Accessibility

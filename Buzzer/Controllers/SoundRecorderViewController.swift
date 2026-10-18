@@ -316,7 +316,7 @@ final class SoundRecorderViewController: UIViewController {
         waveformView.isHidden = !showsWaveform
         levelView.isHidden = showsWaveform
         hintLabel.text = showsWaveform
-            ? "Drag the yellow handles to trim. Tap the mic to record again."
+            ? "Drag the red handles to trim. Tap the mic to record again."
             : "Tap to record up to \(Int(Self.maxDuration)) seconds. Tap again to stop."
         updateTimeLabel()
     }
