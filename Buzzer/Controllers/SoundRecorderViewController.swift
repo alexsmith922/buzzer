@@ -20,6 +20,7 @@ final class SoundRecorderViewController: UIViewController {
     private let timeLabel = UILabel()
     private let levelView = UIProgressView(progressViewStyle: .bar)
     private let playButton = UIButton(configuration: .gray())
+    private let clearButton = UIButton(configuration: .gray())
     private let nameField = UITextField()
 
     private var isRecording: Bool { recorder?.isRecording == true }
@@ -62,6 +63,17 @@ final class SoundRecorderViewController: UIViewController {
         playButton.configuration?.imagePadding = 8
         playButton.addAction(UIAction { [weak self] _ in self?.playBack() }, for: .touchUpInside)
 
+        clearButton.configuration?.title = "Clear"
+        clearButton.configuration?.image = UIImage(systemName: "trash")
+        clearButton.configuration?.imagePadding = 8
+        clearButton.configuration?.baseForegroundColor = .systemRed
+        clearButton.accessibilityHint = "Deletes this recording so you can start over"
+        clearButton.addAction(UIAction { [weak self] _ in self?.clearRecording() }, for: .touchUpInside)
+
+        let playbackButtons = UIStackView(arrangedSubviews: [playButton, clearButton])
+        playbackButtons.spacing = 12
+        playbackButtons.distribution = .fillEqually
+
         nameField.text = "My Recording"
         nameField.placeholder = "Sound name"
         nameField.borderStyle = .roundedRect
@@ -77,7 +89,7 @@ final class SoundRecorderViewController: UIViewController {
         hint.textAlignment = .center
         hint.numberOfLines = 0
 
-        let stack = UIStackView(arrangedSubviews: [recordButton, timeLabel, levelView, hint, playButton, nameField])
+        let stack = UIStackView(arrangedSubviews: [recordButton, timeLabel, levelView, hint, playbackButtons, nameField])
         stack.axis = .vertical
         stack.alignment = .center
         stack.spacing = 20
@@ -199,6 +211,17 @@ final class SoundRecorderViewController: UIViewController {
         SoundPlayer.shared.preview(contentsOf: recordingURL)
     }
 
+    /// Throws away the current take so the user can start over without leaving the screen.
+    private func clearRecording() {
+        guard !isRecording else { return }
+        SoundPlayer.shared.stopPreview()
+        recorder = nil
+        try? FileManager.default.removeItem(at: recordingURL)
+        hasRecording = false
+        recordedDuration = 0
+        updateUI()
+    }
+
     private func save() {
         guard hasRecording else { return }
         let trimmedName = nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
@@ -218,6 +241,7 @@ final class SoundRecorderViewController: UIViewController {
                               for: .normal)
         recordButton.accessibilityLabel = isRecording ? "Stop Recording" : "Record"
         playButton.isEnabled = hasRecording && !isRecording
+        clearButton.isEnabled = hasRecording && !isRecording
         navigationItem.rightBarButtonItem?.isEnabled = hasRecording && !isRecording
         updateTimeLabel()
     }

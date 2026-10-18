@@ -136,22 +136,60 @@ final class SoundListViewController: UITableViewController {
         }
         delete.image = UIImage(systemName: "trash")
 
-        let edit: UIContextualAction
-        if let recipe = sound.recipe {
-            edit = UIContextualAction(style: .normal, title: "Edit") { [weak self] _, _, done in
-                self?.presentDesigner(recipe: recipe, name: sound.name, editing: sound)
-                done(true)
-            }
-            edit.image = UIImage(systemName: "slider.horizontal.3")
-        } else {
-            edit = UIContextualAction(style: .normal, title: "Rename") { [weak self] _, _, done in
-                self?.promptRename(sound)
-                done(true)
-            }
-            edit.image = UIImage(systemName: "pencil")
+        let rename = UIContextualAction(style: .normal, title: "Rename") { [weak self] _, _, done in
+            self?.promptRename(sound)
+            done(true)
         }
-        edit.backgroundColor = .systemBlue
-        return UISwipeActionsConfiguration(actions: [delete, edit])
+        rename.backgroundColor = .systemBlue
+        rename.image = UIImage(systemName: "pencil")
+
+        guard let recipe = sound.recipe else {
+            return UISwipeActionsConfiguration(actions: [delete, rename])
+        }
+        let edit = UIContextualAction(style: .normal, title: "Edit") { [weak self] _, _, done in
+            self?.presentDesigner(recipe: recipe, name: sound.name, editing: sound)
+            done(true)
+        }
+        edit.backgroundColor = .systemIndigo
+        edit.image = UIImage(systemName: "slider.horizontal.3")
+        return UISwipeActionsConfiguration(actions: [delete, rename, edit])
+    }
+
+    /// Long press shows the same actions as swiping, plus Play.
+    override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath,
+                            point: CGPoint) -> UIContextMenuConfiguration? {
+        let sound = sound(at: indexPath)
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
+            guard let self else { return nil }
+            var actions: [UIMenuElement] = [
+                UIAction(title: "Play", image: UIImage(systemName: "play.fill")) { _ in
+                    SoundPlayer.shared.play(sound)
+                },
+            ]
+
+            if sound.isBuiltIn {
+                if let recipe = sound.recipe {
+                    actions.append(UIAction(title: "Remix", image: UIImage(systemName: "slider.horizontal.3")) { _ in
+                        self.presentDesigner(recipe: recipe, name: "\(sound.name) Remix")
+                    })
+                }
+                return UIMenu(children: actions)
+            }
+
+            actions.append(UIAction(title: "Rename", image: UIImage(systemName: "pencil")) { _ in
+                self.promptRename(sound)
+            })
+            if let recipe = sound.recipe {
+                actions.append(UIAction(title: "Edit Sound", image: UIImage(systemName: "slider.horizontal.3")) { _ in
+                    self.presentDesigner(recipe: recipe, name: sound.name, editing: sound)
+                })
+            }
+            let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                self.library.delete(sound)
+            }
+            actions.append(UIMenu(options: .displayInline, children: [delete]))
+            return UIMenu(children: actions)
+        }
     }
 
     // MARK: - Navigation
