@@ -1,7 +1,7 @@
 import AVFoundation
 import UIKit
 
-/// Records a short clip with the microphone, lets the user trim it, and saves it as a buzzer sound.
+/// Records a short clip with the microphone and saves it as a buzzer sound.
 final class SoundRecorderViewController: UIViewController {
 
     private static let maxDuration: TimeInterval = 10
@@ -15,15 +15,10 @@ final class SoundRecorderViewController: UIViewController {
     private var recordedDuration: TimeInterval = 0
     private var hasRecording = false
     private var didSave = false
-    private var isSaving = false
-    private var playbackPlayer: AVAudioPlayer?
-    private var playbackTimer: Timer?
 
     private let recordButton = UIButton(type: .system)
     private let timeLabel = UILabel()
     private let levelView = UIProgressView(progressViewStyle: .bar)
-    private let waveformView = WaveformTrimView()
-    private let hintLabel = UILabel()
     private let playButton = UIButton(configuration: .gray())
     private let clearButton = UIButton(configuration: .gray())
     private let nameField = UITextField()
@@ -87,15 +82,14 @@ final class SoundRecorderViewController: UIViewController {
         nameField.returnKeyType = .done
         nameField.addAction(UIAction { [weak self] _ in self?.nameField.resignFirstResponder() }, for: .editingDidEndOnExit)
 
-        waveformView.addAction(UIAction { [weak self] _ in self?.trimChanged() }, for: .valueChanged)
-        waveformView.addAction(UIAction { [weak self] _ in self?.playBack() }, for: .editingDidEnd)
+        let hint = UILabel()
+        hint.text = "Tap to record up to \(Int(Self.maxDuration)) seconds. Tap again to stop."
+        hint.font = .preferredFont(forTextStyle: .footnote)
+        hint.textColor = .secondaryLabel
+        hint.textAlignment = .center
+        hint.numberOfLines = 0
 
-        hintLabel.font = .preferredFont(forTextStyle: .footnote)
-        hintLabel.textColor = .secondaryLabel
-        hintLabel.textAlignment = .center
-        hintLabel.numberOfLines = 0
-
-        let stack = UIStackView(arrangedSubviews: [recordButton, timeLabel, levelView, waveformView, hintLabel, playbackButtons, nameField])
+        let stack = UIStackView(arrangedSubviews: [recordButton, timeLabel, levelView, hint, playbackButtons, nameField])
         stack.axis = .vertical
         stack.alignment = .center
         stack.spacing = 20
@@ -111,8 +105,6 @@ final class SoundRecorderViewController: UIViewController {
             recordButton.widthAnchor.constraint(equalToConstant: 120),
             recordButton.heightAnchor.constraint(equalToConstant: 120),
             levelView.widthAnchor.constraint(equalTo: stack.widthAnchor, multiplier: 0.6),
-            waveformView.widthAnchor.constraint(equalTo: stack.widthAnchor),
-            waveformView.heightAnchor.constraint(equalToConstant: 96),
             nameField.widthAnchor.constraint(equalTo: stack.widthAnchor),
         ])
 
@@ -123,7 +115,7 @@ final class SoundRecorderViewController: UIViewController {
         super.viewWillDisappear(animated)
         recorder?.stop()
         stopMeterTimer()
-        stopPlayback()
+        SoundPlayer.shared.stopPreview()
         if !didSave {
             try? FileManager.default.removeItem(at: recordingURL)
         }
@@ -156,7 +148,7 @@ final class SoundRecorderViewController: UIViewController {
     }
 
     private func startRecording() {
-        stopPlayback()
+        SoundPlayer.shared.stopPreview()
         recordButton.isEnabled = false
         SoundPlayer.shared.activateRecordingSession { [weak self] error in
             guard let self else { return }
@@ -170,15 +162,20 @@ final class SoundRecorderViewController: UIViewController {
     }
 
     private func beginRecorder() {
+        let settings: [String: Any] = [
+            AVFormatIDKey: kAudioFormatMPEG4AAC,
+            AVSampleRateKey: 44_100,
+            AVNumberOfChannelsKey: 1,
+            AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue,
+        ]
         do {
-            let recorder = try AVAudioRecorder(url: recordingURL, settings: AudioClipEditor.recordingSettings)
+            let recorder = try AVAudioRecorder(url: recordingURL, settings: settings)
             recorder.delegate = self
             recorder.isMeteringEnabled = true
             recorder.record(forDuration: Self.maxDuration)
             self.recorder = recorder
             hasRecording = false
             recordedDuration = 0
-            waveformView.reset()
             startMeterTimer()
         } catch {
             showAlert(title: "Couldn't Record", message: error.localizedDescription)
@@ -209,85 +206,24 @@ final class SoundRecorderViewController: UIViewController {
         updateTimeLabel()
     }
 
-    // MARK: - Playback and trimming
-
-    /// Plays just the part between the trim handles, with a moving playhead.
     private func playBack() {
-        guard hasRecording, !isRecording else { return }
-        stopPlayback()
-        guard let player = try? AVAudioPlayer(contentsOf: recordingURL) else { return }
-        player.currentTime = waveformView.trimStart
-        player.play()
-        playbackPlayer = player
-        playbackTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30, repeats: true) { [weak self] _ in
-            self?.updatePlayhead()
-        }
-    }
-
-    private func updatePlayhead() {
-        guard let player = playbackPlayer, player.isPlaying,
-              player.currentTime < waveformView.trimEnd else {
-            stopPlayback()
-            return
-        }
-        waveformView.playheadTime = player.currentTime
-    }
-
-    private func stopPlayback() {
-        playbackTimer?.invalidate()
-        playbackTimer = nil
-        playbackPlayer?.stop()
-        playbackPlayer = nil
-        waveformView.playheadTime = nil
-    }
-
-    private func trimChanged() {
-        stopPlayback()
-        updateTimeLabel()
-    }
-
-    private func loadWaveform() {
-        AudioClipEditor.loadWaveform(of: recordingURL) { [weak self] result in
-            guard let self, self.hasRecording, case .success(let waveform) = result else { return }
-            self.waveformView.load(peaks: waveform.peaks, duration: waveform.duration)
-            self.updateUI()
-        }
+        guard hasRecording else { return }
+        SoundPlayer.shared.preview(contentsOf: recordingURL)
     }
 
     /// Throws away the current take so the user can start over without leaving the screen.
     private func clearRecording() {
         guard !isRecording else { return }
-        stopPlayback()
+        SoundPlayer.shared.stopPreview()
         recorder = nil
         try? FileManager.default.removeItem(at: recordingURL)
         hasRecording = false
         recordedDuration = 0
-        waveformView.reset()
         updateUI()
     }
 
     private func save() {
-        guard hasRecording, !isSaving else { return }
-        stopPlayback()
-        guard waveformView.isTrimmed else {
-            finishSaving()
-            return
-        }
-        isSaving = true
-        updateUI()
-        AudioClipEditor.trim(recordingURL, from: waveformView.trimStart, to: waveformView.trimEnd) { [weak self] error in
-            guard let self else { return }
-            self.isSaving = false
-            if let error {
-                self.updateUI()
-                self.showAlert(title: "Couldn't Trim Recording", message: error.localizedDescription)
-            } else {
-                self.finishSaving()
-            }
-        }
-    }
-
-    private func finishSaving() {
+        guard hasRecording else { return }
         let trimmedName = nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let sound = SoundEffect(name: trimmedName.isEmpty ? "My Recording" : trimmedName,
                                 source: .recording(fileName: fileName))
@@ -304,29 +240,14 @@ final class SoundRecorderViewController: UIViewController {
         recordButton.setImage(UIImage(systemName: symbol, withConfiguration: UIImage.SymbolConfiguration(pointSize: 44)),
                               for: .normal)
         recordButton.accessibilityLabel = isRecording ? "Stop Recording" : "Record"
-        let canEdit = hasRecording && !isRecording && !isSaving
-        playButton.isEnabled = canEdit
-        clearButton.isEnabled = canEdit
-        recordButton.isEnabled = !isSaving
-        waveformView.isEnabled = canEdit
-        navigationItem.rightBarButtonItem?.isEnabled = canEdit
-        navigationItem.leftBarButtonItem?.isEnabled = !isSaving
-
-        let showsWaveform = hasRecording && !isRecording
-        waveformView.isHidden = !showsWaveform
-        levelView.isHidden = showsWaveform
-        hintLabel.text = showsWaveform
-            ? "Drag the yellow handles to trim. Tap the mic to record again."
-            : "Tap to record up to \(Int(Self.maxDuration)) seconds. Tap again to stop."
+        playButton.isEnabled = hasRecording && !isRecording
+        clearButton.isEnabled = hasRecording && !isRecording
+        navigationItem.rightBarButtonItem?.isEnabled = hasRecording && !isRecording
         updateTimeLabel()
     }
 
     private func updateTimeLabel() {
-        if hasRecording && !isRecording && waveformView.duration > 0 {
-            timeLabel.text = String(format: "%.1f s", waveformView.trimmedLength)
-        } else {
-            timeLabel.text = String(format: "%.1f / %.0f s", recordedDuration, Self.maxDuration)
-        }
+        timeLabel.text = String(format: "%.1f / %.0f s", recordedDuration, Self.maxDuration)
     }
 
     private func showPermissionAlert() {
@@ -358,8 +279,5 @@ extension SoundRecorderViewController: AVAudioRecorderDelegate {
         stopMeterTimer()
         hasRecording = flag && recordedDuration > 0.1
         updateUI()
-        if hasRecording {
-            loadWaveform()
-        }
     }
 }

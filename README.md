@@ -16,8 +16,7 @@ a buzzer sound.
 - **Design a sound**: pick a waveform and shape pitch glide, length, wobble,
   pulse, fade and grit with sliders, or hit Randomize. Built-in sounds can be
   remixed (swipe left).
-- **Record a sound**: record up to 10 seconds with the microphone, then drag the
-  handles on the waveform to trim it before saving.
+- **Record a sound**: record up to 10 seconds with the microphone.
 - Custom sounds can be edited, renamed and deleted, and are saved on device.
 
 ## Game Show sounds
@@ -55,8 +54,8 @@ Buzzer/
   App/          AppDelegate, SceneDelegate
   Models/       SynthRecipe, SoundEffect (+ built-in presets), SoundLibrary
   Services/     SoundSynthesizer (recipe -> WAV), SoundPlayer (AVAudioPlayer),
-                SoundDownloader (game show sounds), AudioClipEditor (waveform + trim)
-  Views/        BuzzerButton, ParameterSliderView, WaveformTrimView
+                SoundDownloader (game show sounds)
+  Views/        BuzzerButton, ParameterSliderView
   Controllers/  Buzzer, SoundList, SoundDesigner, SoundRecorder
 Sounds/         Game show sound files the app downloads (not bundled)
 ```

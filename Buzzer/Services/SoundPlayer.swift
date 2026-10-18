@@ -57,6 +57,10 @@ final class SoundPlayer {
                                                fileTypeHint: AVFileType.wav.rawValue))
     }
 
+    func preview(contentsOf url: URL) {
+        play(previewPlayer: try? AVAudioPlayer(contentsOf: url))
+    }
+
     func stopPreview() {
         previewPlayer?.stop()
         previewPlayer = nil
