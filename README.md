@@ -9,8 +9,8 @@ a buzzer sound.
 - **Arcade-style buzzer** fires on touch down, with a press animation and haptics.
   Rapid presses restart the sound, and it plays even with the silent switch on.
 - **Up to six buzzers at once**, each with its own sound and color. Pick how many
-  with the grid button, then tap the sound under any buzzer to change it from a
-  menu without leaving the screen. Buzzers can be pressed at the same time.
+  with the grid button, then tap the sound under any buzzer to change its sound
+  or color (six presets, or any color with Custom…) without leaving the screen. Buzzers can be pressed at the same time.
 - **11 built-in sounds** (Game Show Buzzer, Wrong Answer, Correct Ding, Air Horn,
   Laser, Alarm, Siren, Boing, Ref Whistle, Static Zap, Power Up). The app
   synthesizes them at runtime instead of shipping audio files, so there are no

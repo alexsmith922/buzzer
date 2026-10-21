@@ -9,8 +9,17 @@ struct BuzzerPad: Codable, Equatable {
         var displayName: String { rawValue.capitalized }
     }
 
+    /// A color the user picked themselves, as sRGB components.
+    struct CustomColor: Codable, Equatable {
+        var red: Double
+        var green: Double
+        var blue: Double
+    }
+
     var soundID: UUID
     var color: Color
+    /// Overrides `color` when set.
+    var customColor: CustomColor?
 }
 
 /// How many buzzers are on screen and how each one is set up. Every pad is kept, even
@@ -75,6 +84,13 @@ final class BuzzerBoard {
 
     func setColor(_ color: BuzzerPad.Color, forPadAt index: Int) {
         pads[index].color = color
+        pads[index].customColor = nil
+        persistAndNotify()
+    }
+
+    func setCustomColor(_ color: BuzzerPad.CustomColor, forPadAt index: Int) {
+        guard pads[index].customColor != color else { return }
+        pads[index].customColor = color
         persistAndNotify()
     }
 

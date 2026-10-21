@@ -9,6 +9,8 @@ final class BuzzerViewController: UIViewController {
     private let flashView = UIView()
     private let grid = UIStackView()
     private var padViews: [BuzzerPadView] = []
+    /// The buzzer whose color the color picker is changing.
+    private var colorPickerPadIndex: Int?
 
     /// The arrangement the grid was last built for, so it's only rebuilt when that changes.
     private var gridShape: (count: Int, columns: Int)?
@@ -75,8 +77,7 @@ final class BuzzerViewController: UIViewController {
 
     private func configure(_ padView: BuzzerPadView, at index: Int) {
         let sound = board.sound(forPadAt: index)
-        let color = board.pads[index].color
-        padView.buzzer.capColor = color.uiColor
+        padView.buzzer.capColor = board.pads[index].uiColor
         padView.buzzer.accessibilityLabel = board.count > 1 ? "Buzzer \(index + 1)" : "Buzzer"
         padView.buzzer.accessibilityValue = sound.name
         padView.soundButton.configuration?.title = sound.name
@@ -128,14 +129,22 @@ final class BuzzerViewController: UIViewController {
             })
         }
 
-        let currentColor = board.pads[index].color
-        let colors = UIMenu(title: "Color", image: UIImage(systemName: "paintpalette"),
-                            children: BuzzerPad.Color.allCases.map { color in
-            let swatch = UIImage(systemName: "circle.fill")?.withTintColor(color.uiColor, renderingMode: .alwaysOriginal)
-            return UIAction(title: color.displayName, image: swatch, state: color == currentColor ? .on : .off) { [weak self] _ in
+        let pad = board.pads[index]
+        func swatch(_ color: UIColor) -> UIImage? {
+            UIImage(systemName: "circle.fill")?.withTintColor(color, renderingMode: .alwaysOriginal)
+        }
+        var colorActions = BuzzerPad.Color.allCases.map { color in
+            UIAction(title: color.displayName, image: swatch(color.uiColor),
+                     state: pad.customColor == nil && color == pad.color ? .on : .off) { [weak self] _ in
                 self?.board.setColor(color, forPadAt: index)
             }
+        }
+        let customImage = pad.customColor.flatMap { swatch($0.uiColor) } ?? UIImage(systemName: "eyedropper")
+        colorActions.append(UIAction(title: "Custom…", image: customImage,
+                                     state: pad.customColor == nil ? .off : .on) { [weak self] _ in
+            self?.showColorPicker(forPadAt: index)
         })
+        let colors = UIMenu(title: "Color", image: UIImage(systemName: "paintpalette"), children: colorActions)
         let more = UIAction(title: "All Sounds…", image: UIImage(systemName: "music.note.list")) { [weak self] _ in
             self?.showSounds(forPadAt: index)
         }
@@ -164,7 +173,7 @@ final class BuzzerViewController: UIViewController {
 
     private func buzz(padAt index: Int) {
         SoundPlayer.shared.play(board.sound(forPadAt: index))
-        flashScreen(color: board.pads[index].color.uiColor)
+        flashScreen(color: board.pads[index].uiColor)
     }
 
     private func flashScreen(color: UIColor) {
@@ -175,6 +184,17 @@ final class BuzzerViewController: UIViewController {
         UIView.animate(withDuration: 0.5, delay: 0, options: [.curveEaseOut, .allowUserInteraction]) {
             self.flashView.alpha = 0
         }
+    }
+
+    private func showColorPicker(forPadAt index: Int) {
+        let picker = UIColorPickerViewController()
+        picker.title = board.count > 1 ? "Buzzer \(index + 1) Color" : "Buzzer Color"
+        picker.selectedColor = board.pads[index].uiColor
+        picker.supportsAlpha = false
+        picker.delegate = self
+        picker.popoverPresentationController?.sourceView = padViews[index].soundButton
+        colorPickerPadIndex = index
+        present(picker, animated: true)
     }
 
     /// With one buzzer, the library picks its sound as before. With several, it's for
@@ -195,5 +215,27 @@ final class BuzzerViewController: UIViewController {
             list.title = "Buzzer \(index + 1)"
         }
         navigationController?.pushViewController(list, animated: true)
+    }
+}
+
+// MARK: - Custom colors
+
+extension BuzzerViewController: UIColorPickerViewControllerDelegate {
+
+    func colorPickerViewController(_ viewController: UIColorPickerViewController,
+                                   didSelect color: UIColor, continuously: Bool) {
+        guard let index = colorPickerPadIndex else { return }
+        if continuously {
+            // Preview while dragging, and save once the user lets go.
+            padViews[index].buzzer.capColor = color
+        } else {
+            board.setCustomColor(BuzzerPad.CustomColor(color), forPadAt: index)
+        }
+    }
+
+    func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
+        guard let index = colorPickerPadIndex else { return }
+        board.setCustomColor(BuzzerPad.CustomColor(viewController.selectedColor), forPadAt: index)
+        colorPickerPadIndex = nil
     }
 }
