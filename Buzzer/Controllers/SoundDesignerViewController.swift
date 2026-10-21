@@ -4,6 +4,8 @@ import UIKit
 final class SoundDesignerViewController: UIViewController {
 
     private let library = SoundLibrary.shared
+    /// Called after a new sound is saved, so the screen that opened this can use it.
+    var onSave: ((SoundEffect) -> Void)?
     private let editingSound: SoundEffect?
     private var recipe: SynthRecipe
 
@@ -162,7 +164,7 @@ final class SoundDesignerViewController: UIViewController {
         } else {
             let sound = SoundEffect(name: name, source: .synth(recipe))
             library.save(sound)
-            library.selectedSound = sound
+            onSave?(sound)
         }
         dismiss(animated: true)
     }

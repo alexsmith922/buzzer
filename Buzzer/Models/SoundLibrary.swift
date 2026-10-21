@@ -1,6 +1,6 @@
 import Foundation
 
-/// Owns the built-in sounds, the user's own sounds, and which sound the buzzer plays.
+/// Owns the built-in sounds and the user's own sounds.
 /// Custom sounds are saved as JSON next to their recordings in Documents/Sounds.
 final class SoundLibrary {
 
@@ -10,15 +10,12 @@ final class SoundLibrary {
     let builtInSounds = SoundEffect.builtIns
     private(set) var customSounds: [SoundEffect] = []
 
-    private let defaults: UserDefaults
     private let fileManager: FileManager
     private let directory: URL
-    private let selectedSoundKey = "selectedSoundID"
 
     private var indexURL: URL { directory.appendingPathComponent("sounds.json") }
 
-    init(defaults: UserDefaults = .standard, fileManager: FileManager = .default) {
-        self.defaults = defaults
+    init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
         let documents = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
         directory = documents.appendingPathComponent("Sounds", isDirectory: true)
@@ -41,21 +38,6 @@ final class SoundLibrary {
     }
 
     var allSounds: [SoundEffect] { customSounds + classicSounds + builtInSounds }
-
-    var selectedSound: SoundEffect {
-        get {
-            if let idString = defaults.string(forKey: selectedSoundKey),
-               let id = UUID(uuidString: idString),
-               let sound = sound(withID: id) {
-                return sound
-            }
-            return builtInSounds[0]
-        }
-        set {
-            defaults.set(newValue.id.uuidString, forKey: selectedSoundKey)
-            notifyChange()
-        }
-    }
 
     /// Called when a downloaded sound arrives, so screens can show it.
     func downloadedSoundsDidChange() {

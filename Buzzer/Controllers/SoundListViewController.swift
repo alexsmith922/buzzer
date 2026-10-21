@@ -1,7 +1,7 @@
 import UIKit
 
-/// Lists the user's sounds and the built-in ones. Tap to choose and hear a sound;
-/// use + to design or record a new one.
+/// Lists the user's sounds and the built-in ones. Tap to hear a sound, and choose it when
+/// picking for a buzzer; use + to design or record a new one.
 final class SoundListViewController: UITableViewController {
 
     private enum Section: Int, CaseIterable {
@@ -10,8 +10,16 @@ final class SoundListViewController: UITableViewController {
 
     private let library = SoundLibrary.shared
     private let cellIdentifier = "SoundCell"
+    private var selectedSoundID: UUID?
+    private let onSelect: ((SoundEffect) -> Void)?
 
-    init() {
+    /// - Parameters:
+    ///   - selectedSoundID: The sound to show a checkmark on.
+    ///   - onSelect: Called when the user picks a sound, or saves a new one. If nil,
+    ///     tapping a sound only plays it.
+    init(selectedSoundID: UUID? = nil, onSelect: ((SoundEffect) -> Void)? = nil) {
+        self.selectedSoundID = selectedSoundID
+        self.onSelect = onSelect
         super.init(style: .insetGrouped)
     }
 
@@ -21,7 +29,7 @@ final class SoundListViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Sounds"
+        title = title ?? "Sounds"
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellIdentifier)
 
         let menu = UIMenu(children: [
@@ -29,7 +37,10 @@ final class SoundListViewController: UITableViewController {
                 self?.presentDesigner(recipe: .random(), name: "My Sound")
             },
             UIAction(title: "Record a Sound", image: UIImage(systemName: "mic")) { [weak self] _ in
-                self?.presentModally(SoundRecorderViewController())
+                guard let self else { return }
+                let recorder = SoundRecorderViewController()
+                recorder.onSave = self.onSelect == nil ? nil : { [weak self] in self?.choose($0) }
+                self.presentModally(recorder)
             },
         ])
         navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .add, menu: menu)
@@ -100,7 +111,7 @@ final class SoundListViewController: UITableViewController {
         case .downloaded: content.image = UIImage(systemName: "speaker.wave.2.fill")
         }
         cell.contentConfiguration = content
-        cell.accessoryType = sound.id == library.selectedSound.id ? .checkmark : .none
+        cell.accessoryType = sound.id == selectedSoundID ? .checkmark : .none
         return cell
     }
 
@@ -108,9 +119,20 @@ final class SoundListViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let sound = sound(at: indexPath)
-        library.selectedSound = sound
+        if onSelect != nil {
+            choose(sound)
+        }
         SoundPlayer.shared.play(sound)
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+
+    private func choose(_ sound: SoundEffect) {
+        selectedSoundID = sound.id
+        onSelect?(sound)
+        for indexPath in tableView.indexPathsForVisibleRows ?? [] {
+            tableView.cellForRow(at: indexPath)?.accessoryType =
+                self.sound(at: indexPath).id == sound.id ? .checkmark : .none
+        }
     }
 
     override func tableView(_ tableView: UITableView,
@@ -195,7 +217,9 @@ final class SoundListViewController: UITableViewController {
     // MARK: - Navigation
 
     private func presentDesigner(recipe: SynthRecipe, name: String, editing sound: SoundEffect? = nil) {
-        presentModally(SoundDesignerViewController(recipe: recipe, name: name, editing: sound))
+        let designer = SoundDesignerViewController(recipe: recipe, name: name, editing: sound)
+        designer.onSave = onSelect == nil ? nil : { [weak self] in self?.choose($0) }
+        presentModally(designer)
     }
 
     private func presentModally(_ viewController: UIViewController) {

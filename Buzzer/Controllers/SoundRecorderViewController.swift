@@ -7,6 +7,8 @@ final class SoundRecorderViewController: UIViewController {
     private static let maxDuration: TimeInterval = 10
 
     private let library = SoundLibrary.shared
+    /// Called after a new sound is saved, so the screen that opened this can use it.
+    var onSave: ((SoundEffect) -> Void)?
     private let fileName: String
     private var recordingURL: URL { library.recordingURL(for: fileName) }
 
@@ -293,7 +295,7 @@ final class SoundRecorderViewController: UIViewController {
                                 source: .recording(fileName: fileName))
         didSave = true
         library.save(sound)
-        library.selectedSound = sound
+        onSave?(sound)
         dismiss(animated: true)
     }
 

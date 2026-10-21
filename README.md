@@ -8,6 +8,9 @@ a buzzer sound.
 
 - **Arcade-style buzzer** fires on touch down, with a press animation and haptics.
   Rapid presses restart the sound, and it plays even with the silent switch on.
+- **Up to six buzzers at once**, each with its own sound and color. Pick how many
+  with the grid button, then tap the sound under any buzzer to change it from a
+  menu without leaving the screen. Buzzers can be pressed at the same time.
 - **11 built-in sounds** (Game Show Buzzer, Wrong Answer, Correct Ding, Air Horn,
   Laser, Alarm, Siren, Boing, Ref Whistle, Static Zap, Power Up). The app
   synthesizes them at runtime instead of shipping audio files, so there are no
@@ -53,10 +56,11 @@ Requires iOS 17. To run on a device, set your team under Signing & Capabilities.
 ```
 Buzzer/
   App/          AppDelegate, SceneDelegate
-  Models/       SynthRecipe, SoundEffect (+ built-in presets), SoundLibrary
+  Models/       SynthRecipe, SoundEffect (+ built-in presets), SoundLibrary,
+                BuzzerBoard (how many buzzers and each one's sound and color)
   Services/     SoundSynthesizer (recipe -> WAV), SoundPlayer (AVAudioPlayer),
                 SoundDownloader (game show sounds), AudioClipEditor (waveform + trim)
-  Views/        BuzzerButton, ParameterSliderView, WaveformTrimView
+  Views/        BuzzerButton, BuzzerPadView, ParameterSliderView, WaveformTrimView
   Controllers/  Buzzer, SoundList, SoundDesigner, SoundRecorder
 Sounds/         Game show sound files the app downloads (not bundled)
 ```
