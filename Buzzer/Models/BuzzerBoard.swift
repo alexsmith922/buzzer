@@ -36,6 +36,7 @@ final class BuzzerBoard {
 
     private let library: SoundLibrary
     private let defaults: UserDefaults
+    private var libraryObserver: NSObjectProtocol?
     private static let storageKey = "buzzerBoard"
     /// Where the single-buzzer version of the app kept its sound.
     private static let legacySelectedSoundKey = "selectedSoundID"
@@ -62,6 +63,12 @@ final class BuzzerBoard {
             pads = starterPads
             count = 1
         }
+
+        libraryObserver = NotificationCenter.default.addObserver(
+            forName: SoundLibrary.didChangeNotification, object: library, queue: .main
+        ) { [weak self] _ in
+            self?.refreshLastSound()
+        }
     }
 
     /// The pads currently on screen.
@@ -79,6 +86,7 @@ final class BuzzerBoard {
 
     func setSound(_ sound: SoundEffect, forPadAt index: Int) {
         pads[index].soundID = sound.id
+        LastSound.current = LastSound(sound)
         persistAndNotify()
     }
 
@@ -94,6 +102,24 @@ final class BuzzerBoard {
         persistAndNotify()
     }
 
+    // MARK: - Lock Screen widget
+
+    /// The sound the Lock Screen widget plays, falling back to the first pad's sound.
+    var lastUsedSound: SoundEffect {
+        LastSound.current.flatMap { library.sound(withID: $0.soundID) } ?? sound(forPadAt: 0)
+    }
+
+    /// Makes a pad's sound the one the Lock Screen widget plays.
+    func markUsed(padAt index: Int) {
+        LastSound.current = LastSound(sound(forPadAt: index))
+    }
+
+    /// Keeps the widget's label right after its sound is renamed or deleted.
+    private func refreshLastSound() {
+        guard LastSound.current != nil else { return }
+        LastSound.current = LastSound(lastUsedSound)
+    }
+
     /// A mix of different sounds so new buzzers are easy to tell apart.
     private static func starterSounds(firstSoundID: UUID?) -> [UUID] {
         let builtIns = SoundEffect.builtIns
@@ -107,5 +133,12 @@ final class BuzzerBoard {
             defaults.set(data, forKey: Self.storageKey)
         }
         NotificationCenter.default.post(name: Self.didChangeNotification, object: self)
+    }
+}
+
+extension LastSound {
+
+    init(_ sound: SoundEffect) {
+        self.init(soundID: sound.id, name: sound.name)
     }
 }

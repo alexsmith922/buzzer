@@ -6,20 +6,89 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B0220000000000000000A01B /* BuzzerWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B0220000000000000000A010 /* BuzzerWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B0220000000000000000A01C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B0220000000000000000A009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B0220000000000000000A011;
+			remoteInfo = BuzzerWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B0220000000000000000A01A /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B0220000000000000000A01B /* BuzzerWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		B0220000000000000000A001 /* Buzzer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Buzzer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0220000000000000000A010 /* BuzzerWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BuzzerWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B0220000000000000000A01E /* Exceptions for "Buzzer" folder in "Buzzer" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B0220000000000000000A006 /* Buzzer */;
+		};
+		B0220000000000000000A01F /* Exceptions for "BuzzerWidget" folder in "BuzzerWidget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B0220000000000000000A011 /* BuzzerWidget */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B0220000000000000000A002 /* Buzzer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B0220000000000000000A01E /* Exceptions for "Buzzer" folder in "Buzzer" target */,
+			);
 			path = Buzzer;
+			sourceTree = "<group>";
+		};
+		B0220000000000000000A018 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		B0220000000000000000A019 /* BuzzerWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B0220000000000000000A01F /* Exceptions for "BuzzerWidget" folder in "BuzzerWidget" target */,
+			);
+			path = BuzzerWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		B0220000000000000000A003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B0220000000000000000A013 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +102,8 @@
 			isa = PBXGroup;
 			children = (
 				B0220000000000000000A002 /* Buzzer */,
+				B0220000000000000000A018 /* Shared */,
+				B0220000000000000000A019 /* BuzzerWidget */,
 				B0220000000000000000A005 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +112,7 @@
 			isa = PBXGroup;
 			children = (
 				B0220000000000000000A001 /* Buzzer.app */,
+				B0220000000000000000A010 /* BuzzerWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -55,13 +127,16 @@
 				B0220000000000000000A007 /* Sources */,
 				B0220000000000000000A003 /* Frameworks */,
 				B0220000000000000000A008 /* Resources */,
+				B0220000000000000000A01A /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B0220000000000000000A01D /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B0220000000000000000A002 /* Buzzer */,
+				B0220000000000000000A018 /* Shared */,
 			);
 			name = Buzzer;
 			packageProductDependencies = (
@@ -69,6 +144,29 @@
 			productName = Buzzer;
 			productReference = B0220000000000000000A001 /* Buzzer.app */;
 			productType = "com.apple.product-type.application";
+		};
+		B0220000000000000000A011 /* BuzzerWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B0220000000000000000A015 /* Build configuration list for PBXNativeTarget "BuzzerWidget" */;
+			buildPhases = (
+				B0220000000000000000A012 /* Sources */,
+				B0220000000000000000A013 /* Frameworks */,
+				B0220000000000000000A014 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B0220000000000000000A019 /* BuzzerWidget */,
+				B0220000000000000000A018 /* Shared */,
+			);
+			name = BuzzerWidget;
+			packageProductDependencies = (
+			);
+			productName = BuzzerWidget;
+			productReference = B0220000000000000000A010 /* BuzzerWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -81,6 +179,9 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					B0220000000000000000A006 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					B0220000000000000000A011 = {
 						CreatedOnToolsVersion = 16.0;
 					};
 				};
@@ -100,12 +201,20 @@
 			projectRoot = "";
 			targets = (
 				B0220000000000000000A006 /* Buzzer */,
+				B0220000000000000000A011 /* BuzzerWidget */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		B0220000000000000000A008 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B0220000000000000000A014 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +231,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B0220000000000000000A012 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B0220000000000000000A01D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B0220000000000000000A011 /* BuzzerWidget */;
+			targetProxy = B0220000000000000000A01C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		B0220000000000000000A00C /* Debug */ = {
@@ -247,9 +371,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Buzzer/Buzzer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Buzzer/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Buzzer;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Buzzer uses the microphone so you can record your own buzzer sounds.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -275,9 +401,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Buzzer/Buzzer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Buzzer/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Buzzer;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Buzzer uses the microphone so you can record your own buzzer sounds.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -292,6 +420,54 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = one.alexsmith.Buzzer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B0220000000000000000A016 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BuzzerWidget/BuzzerWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BuzzerWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Buzzer;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = one.alexsmith.Buzzer.BuzzerWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B0220000000000000000A017 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BuzzerWidget/BuzzerWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BuzzerWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Buzzer;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = one.alexsmith.Buzzer.BuzzerWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -315,6 +491,15 @@
 			buildConfigurations = (
 				B0220000000000000000A00E /* Debug */,
 				B0220000000000000000A00F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B0220000000000000000A015 /* Build configuration list for PBXNativeTarget "BuzzerWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B0220000000000000000A016 /* Debug */,
+				B0220000000000000000A017 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

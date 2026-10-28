@@ -22,6 +22,9 @@ a buzzer sound.
 - **Record a sound**: record up to 10 seconds with the microphone, then drag the
   handles on the waveform to trim it before saving.
 - Custom sounds can be edited, renamed and deleted, and are saved on device.
+- **Lock Screen widget**: tap it to play the last buzzer sound without opening
+  the app. "Last" means the buzzer pressed, or given a new sound, most recently.
+  The same action is in Shortcuts as "Play Last Buzzer Sound".
 
 ## Game Show sounds
 
@@ -49,7 +52,13 @@ Only use CC0 or otherwise free-to-use clips, and record where each came from in
 ## Running
 
 Open `Buzzer.xcodeproj` in Xcode 16 or later, choose a simulator or device, and run.
-Requires iOS 17. To run on a device, set your team under Signing & Capabilities.
+Requires iOS 17. To run on a device, set your team under Signing & Capabilities
+for both the Buzzer and BuzzerWidget targets. Both use the App Group
+`group.one.alexsmith.Buzzer`, which lets the widget show the last sound's name.
+
+The widget's button runs `PlayLastSoundIntent`, an `AudioPlaybackIntent`, so iOS
+runs it in the app (launching it in the background if needed) rather than in the
+widget extension. That's why the app has the Audio background mode.
 
 ## Layout
 
@@ -62,5 +71,8 @@ Buzzer/
                 SoundDownloader (game show sounds), AudioClipEditor (waveform + trim)
   Views/        BuzzerButton, BuzzerPadView, ParameterSliderView, WaveformTrimView
   Controllers/  Buzzer, SoundList, SoundDesigner, SoundRecorder
+  Intents/      PlayLastSoundIntent's playback, which runs in the app
+BuzzerWidget/   Lock Screen widget (SwiftUI, as WidgetKit requires)
+Shared/         In both targets: LastSound (app group storage), PlayLastSoundIntent
 Sounds/         Game show sound files the app downloads (not bundled)
 ```

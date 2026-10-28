@@ -19,11 +19,23 @@ final class SoundPlayer {
 
     /// Plays even when the ringer switch is on silent, as a buzzer should.
     func activatePlaybackSession() {
-        sessionQueue.async {
-            let session = AVAudioSession.sharedInstance()
-            try? session.setCategory(.playback, mode: .default)
-            try? session.setActive(true)
+        sessionQueue.async(execute: Self.configurePlaybackSession)
+    }
+
+    /// Returns once the session is ready, for playing when the app isn't on screen.
+    func activatePlaybackSession() async {
+        await withCheckedContinuation { continuation in
+            sessionQueue.async {
+                Self.configurePlaybackSession()
+                continuation.resume()
+            }
         }
+    }
+
+    private static func configurePlaybackSession() {
+        let session = AVAudioSession.sharedInstance()
+        try? session.setCategory(.playback, mode: .default)
+        try? session.setActive(true)
     }
 
     /// Calls `completion` on the main thread with nil once the session is ready, or the error.

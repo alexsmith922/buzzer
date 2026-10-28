@@ -173,6 +173,7 @@ final class BuzzerViewController: UIViewController {
 
     private func buzz(padAt index: Int) {
         SoundPlayer.shared.play(board.sound(forPadAt: index))
+        board.markUsed(padAt: index)
         flashScreen(color: board.pads[index].uiColor)
     }
 
